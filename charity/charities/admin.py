@@ -1,3 +1,10 @@
 from django.contrib import admin
+from charities.models import Benefactor, Charity, Task
 
-# Register your models here.
+
+@admin.register(Benefactor)
+class BenafactorAdmin(admin.ModelAdmin):
+    pass
+
+
+
