@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from accounts.models import User
 
 
@@ -17,6 +18,23 @@ class Charity(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     reg_number = models.CharField(max_length=10)
+
+
+class TaskManager(models.Manager):
+
+    def related_tasks_to_charity(self, user):
+        return Task.objects.filter(charity__user_id=user.id)
+
+    def related_tasks_to_benefactor(self, user):
+        return Task.objects.filter(assigned_benefactor__user_id=user.id)
+
+    def all_related_tasks_to_user(self, user):
+
+        charityTasks = self.related_tasks_to_charity(user)
+        benefactorTasks = self.related_tasks_to_benefactor(user)
+        charityAndBenefactor = charityTasks.union(benefactorTasks)
+        pendingTasks = Task.objects.filter(state="P")
+        return pendingTasks.union(charityAndBenefactor)
 
 
 class Task(models.Model):
@@ -39,3 +57,6 @@ class Task(models.Model):
     gender_limit = models.CharField(max_length=1, blank=True, null=True, choices=GENDER_CHOICES)
     state = models.CharField(choices=STATE_CHOICES, default="P", max_length=1)
     title = models.CharField(max_length=60)
+    objects = TaskManager()
+
+
