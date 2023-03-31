@@ -30,11 +30,11 @@ class TaskManager(models.Manager):
 
     def all_related_tasks_to_user(self, user):
 
-        #condition = ~Q(charity__user_id=user.id) & ~Q(assigned_benefactor__user_id=user.id)
         charityTasks = self.related_tasks_to_charity(user)
         benefactorTasks = self.related_tasks_to_benefactor(user)
-        charityTasks.union(benefactorTasks)
-        return Task.objects.difference(charityTasks)
+        charityAndBenefactor = charityTasks.union(benefactorTasks)
+        pendingTasks = Task.objects.filter(state="P")
+        return pendingTasks.union(charityAndBenefactor)
 
 
 class Task(models.Model):
