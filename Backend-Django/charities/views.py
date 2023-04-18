@@ -13,12 +13,12 @@ from charities.serializers import (
 
 class BenefactorRegistration(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        benefactor_serialier = BenefactorSerializer(data=request.data)
-        if benefactor_serialier.is_valid():
-            benefactor_serialier.save(user=request.user)
+        benefactor_serializer = BenefactorSerializer(data=request.data)
+        if benefactor_serializer.is_valid():
+            benefactor_serializer.save(user=request.user)
             return Response(status=200,
                             data={"message": "Benefactor created!"})
-        return Response(data={"message": benefactor_serialier.errors})
+        return Response(data={"message": benefactor_serializer.errors})
 
 
 class CharityRegistration(generics.CreateAPIView):
@@ -71,7 +71,23 @@ class Tasks(generics.ListCreateAPIView):
 
 
 class TaskRequest(APIView):
-    pass
+    permission_classes = [IsBenefactor, ]
+
+    def get(self, request, task_id):
+
+        task = get_object_or_404(Task, id=task_id)
+        if task.state != Task.TaskStatus.PENDING:
+            return Response(
+                status=404,
+                data={'detail': 'This task is not pending.'})
+
+        task.assign_to_benefactor(request.user.benefactor)
+        return Response(
+            status=200,
+            data={'detail': 'Request sent.'})
+
+        return Response(status=404)
+
 
 
 class TaskResponse(APIView):
