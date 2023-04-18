@@ -5,11 +5,20 @@ from .models import Charity, Task
 
 
 class BenefactorSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Benefactor
+        fields = ['experience', 'free_time_per_week']
+
+    def create(self, validated_data):
+        benefactor = Benefactor(**validated_data)
+        benefactor.save()
+        return benefactor
 
 
 class CharitySerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Charity
+        fields = ['name', 'reg_number']
 
 
 class TaskSerializer(serializers.ModelSerializer):

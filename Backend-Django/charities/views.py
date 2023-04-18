@@ -11,12 +11,24 @@ from charities.serializers import (
 )
 
 
-class BenefactorRegistration(APIView):
-    pass
+class BenefactorRegistration(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        benefactor_serialier = BenefactorSerializer(data=request.data)
+        if benefactor_serialier.is_valid():
+            benefactor_serialier.save(user=request.user)
+            return Response(status=200,
+                            data={"message": "Benefactor created!"})
+        return Response(data={"message": benefactor_serialier.errors})
 
 
-class CharityRegistration(APIView):
-    pass
+class CharityRegistration(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        charity_serializer = CharitySerializer(data=request.data)
+        if charity_serializer.is_valid():
+            charity_serializer.save(user=request.user)
+            return Response(status=200,
+                            data={"message": "Charity created!"})
+        return Response(data={"message": charity_serializer.errors})
 
 
 class Tasks(generics.ListCreateAPIView):

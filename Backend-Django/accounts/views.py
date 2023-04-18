@@ -27,3 +27,5 @@ class UserRegistration(generics.CreateAPIView):
 
         return Response({"message": user_serializer.errors})
 
+
+
