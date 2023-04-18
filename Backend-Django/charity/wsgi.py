@@ -1,5 +1,5 @@
 """
-WSGI config for charity project.
+WSGI charity for charity project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

@@ -1,11 +1,9 @@
-from django.http import HttpResponse
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
-from accounts.models import User
 
 
 def about_us(request):
-    allUsers = User.objects.all().values()
-    context = {"users": allUsers}
-    #return HttpResponse(str(allUsers.get_full_name()))
-    return render(request, 'about_us.html', context=context)
-
+    context = {
+        'members': get_user_model().objects.all()
+    }
+    return render(request, 'about_us.html', context)

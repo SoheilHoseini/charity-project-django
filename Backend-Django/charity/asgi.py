@@ -1,5 +1,5 @@
 """
-ASGI config for charity project.
+ASGI charity for charity project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
