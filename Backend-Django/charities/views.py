@@ -13,12 +13,12 @@ from charities.serializers import (
 
 class BenefactorRegistration(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        benefactor_serialier = BenefactorSerializer(data=request.data)
-        if benefactor_serialier.is_valid():
-            benefactor_serialier.save(user=request.user)
+        benefactor_serializer = BenefactorSerializer(data=request.data)
+        if benefactor_serializer.is_valid():
+            benefactor_serializer.save(user=request.user)
             return Response(status=200,
                             data={"message": "Benefactor created!"})
-        return Response(data={"message": benefactor_serialier.errors})
+        return Response(data={"message": benefactor_serializer.errors})
 
 
 class CharityRegistration(generics.CreateAPIView):
@@ -71,12 +71,74 @@ class Tasks(generics.ListCreateAPIView):
 
 
 class TaskRequest(APIView):
-    pass
+    permission_classes = [IsBenefactor, ]
+
+    def get(self, request, task_id):
+
+        task = get_object_or_404(Task, id=task_id)
+        if task.state != Task.TaskStatus.PENDING:
+            return Response(
+                status=404,
+                data={'detail': 'This task is not pending.'})
+
+        task.assign_to_benefactor(request.user.benefactor)
+        return Response(
+            status=200,
+            data={'detail': 'Request sent.'})
+
+        return Response(status=404)
 
 
 class TaskResponse(APIView):
-    pass
+    permission_classes = [IsCharityOwner,]
+
+    def post(self, request, task_id):
+        task = get_object_or_404(Task, id=task_id)
+        if request.data["response"] not in ["A","R"]:
+            return Response(
+                status=400,
+                data={'detail': 'Required field ("A" for accepted / "R" for rejected)'}
+            )
+        if task.state != Task.TaskStatus.WAITING:
+            return Response(
+                status=404,
+                data={'detail': 'This task is not waiting.'}
+            )
+
+        if request.data["response"] == "A":
+            task.state = Task.TaskStatus.ASSIGNED
+            task.save()
+            return Response(
+                status=200,
+                data={'detail': 'Response sent.'}
+            )
+
+        if request.data["response"] == "R":
+            task.state = Task.TaskStatus.PENDING
+            task.assigned_benefactor = None
+            task.save()
+            return Response(
+                status=200,
+                data={'detail': 'Response sent.'}
+            )
 
 
 class DoneTask(APIView):
-    pass
+    permission_classes = [IsCharityOwner]
+
+    def post(self, request, task_id):
+        task = get_object_or_404(Task, id=task_id)
+
+        if task.state != Task.TaskStatus.ASSIGNED:
+            return Response(
+                status=404,
+                data={'detail': 'Task is not assigned yet.'}
+            )
+
+        task.state = Task.TaskStatus.DONE
+        task.save()
+        return Response(
+            status=200,
+            data={'detail': 'Task has been done successfully.'}
+        )
+
